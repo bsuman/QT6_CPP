@@ -1,7 +1,7 @@
 
 #include <QCoreApplication>
 #include <QList>
-
+#include <QTextStream>
 
 /*
 Qlist templated container for storing data.
@@ -11,6 +11,10 @@ Copy of Qlist can be made but could be expensive computation.
 QMap templated class to make the associative container mapping a key to a value
 Key should be unique
 Values dont have to be unique
+
+QTextStream:
+Input output using QIODevice Class
+Qt::endl equivlaent to doing flush on the stdout
 
 */
 
@@ -72,11 +76,23 @@ void CheckMap()
 
 }
 
+void CheckQTextStream(){
+
+    QTextStream q_input(stdin);
+    QTextStream q_out(stdout);
+    q_out<<"Enter your name and age:\n" ;
+    q_out.flush();
+    QString name;
+    name = q_input.readLine();
+    double age = q_input.readLine().toDouble();
+    q_out<<"Entered name is:"<< name <<" and age is "<<age <<Qt::endl;
+}
 
 int main(int argc, char *argv[])
 {
     QCoreApplication a(argc, argv);
     CheckList();
     CheckMap();
+    CheckQTextStream();
     return a.exec();
 }
