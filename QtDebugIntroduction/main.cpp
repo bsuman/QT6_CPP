@@ -3,6 +3,7 @@
 #include <QDebug>
 #include <iostream>
 #include <QSysInfo>
+#include <QStorageInfo>
 #include "hungrycat.h"
 
 using namespace std;
@@ -31,7 +32,12 @@ using namespace std;
 
 */
 
+/*
+* use of QStorageInfo class to get information about mounted file systems and devices
 
+
+
+*/
 void myMessageOutput(QtMsgType type, const QMessageLogContext &context, const QString &msg)
 {
     QByteArray localMsg = msg.toLocal8Bit();
@@ -61,6 +67,9 @@ void OS_check_compiletime(){
 // compile time detection using predefined macros
 #ifdef Q_OS_WIN64
     qInfo()<< "Windows machine detected using Q_OS_WIN64!";
+    QStorageInfo sInfo = QStorageInfo::root();
+    qInfo()<<"Root Display Name:" <<sInfo.displayName();
+    qInfo()<<"Root Path:" <<sInfo.rootPath();
 #endif
 
 #ifdef Q_OS_WINDOWS
