@@ -2,6 +2,7 @@
 #include <QCoreApplication>
 #include <QDebug>
 #include <iostream>
+#include <QSysInfo>
 #include "hungrycat.h"
 
 using namespace std;
@@ -18,6 +19,16 @@ using namespace std;
  * The messages output using any one of the QDebug messages types will be intercept after the message handler is installed
  * The messagehandler during installation takes the messagehandler function as an input and to uninstall takes 0 as an input argument.
  * The classes which use the QDebug class are not aware of the messagehandler and the logging happens automatically once the messagehandler is installed
+*/
+
+
+/*
+ * OS determination
+ * Compile Time
+ * using the predefined macros to determine if the current OS matches the expected
+ * Run Time
+ * using QSysInfo
+
 */
 
 
@@ -45,6 +56,29 @@ void myMessageOutput(QtMsgType type, const QMessageLogContext &context, const QS
     }
 }
 
+void OS_check_compiletime(){
+
+// compile time detection using predefined macros
+#ifdef Q_OS_WIN64
+    qInfo()<< "Windows machine detected using Q_OS_WIN64!";
+#endif
+
+#ifdef Q_OS_WINDOWS
+    qInfo()<< "Windows machine detected using Q_OS_WINDOWS !";
+#endif
+
+// disabled because the current machine is windows
+#ifdef Q_OS_LINUX
+    qInfo()<< "LINUX machine detected using Q_OS_LINUX !";
+#endif
+
+}
+
+void OS_check_Runtime(){
+    qInfo()<<QSysInfo::prettyProductName();
+
+}
+
 void test(){
     qDebug()<<"Test function:Debug call";
     qInfo()<<"Test function:Info call";
@@ -61,6 +95,9 @@ int main(int argc, char **argv)
     QCoreApplication a(argc, argv);
     QTextStream input(stdin);
     QString option;
+    OS_check_Runtime();
+    OS_check_compiletime();
+
     qInfo() <<"In the main function";
     bool isRunning(true);
     do{
