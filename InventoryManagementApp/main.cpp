@@ -1,6 +1,7 @@
 
 #include <QCoreApplication>
 #include <QTextStream>
+#include <QSettings>
 #include "inventory.h"
 /*
 * Console Application for managing an inventory.
@@ -17,10 +18,45 @@
 // remove items, quantity
 // get inventory list
 
+// added QSettings usage to save some environment/user settings of the application which will be loaded each time the application starts
+// ( after the first time the application is lauched)
+
+void info(QSettings &settings){
+    qInfo()<<"Application Settings Saved in " << settings.fileName();
+    qInfo()<<"Application Settings Size" << settings.allKeys().size();
+}
+
+void save(QSettings &settings){
+    info(settings);
+    QString name;
+    QTextStream qin(stdin);
+    qInfo()<<"Enter your name as the author:";
+    name = qin.readLine();
+    settings.setValue("Author", name);
+    qInfo()<< settings.status();
+}
+
+void load(QSettings &settings){
+    info(settings);
+    QStringList kl = settings.allKeys();
+    foreach(QString key, kl){
+        qInfo()<<"Key:" << key << "Value:" <<  settings.value(key).toString();
+    }
+}
 
 int main(int argc, char *argv[])
 {
     QCoreApplication a(argc, argv);
+    QCoreApplication::setApplicationName("InventoryManagement");
+    QCoreApplication::setApplicationVersion("1.1");
+    QCoreApplication::setOrganizationName("Self-Learner.org");
+    QSettings settings;
+    if(settings.allKeys().size() >0)
+        load(settings);
+    else{
+        save(settings);
+    }
+
     QTextStream qIn(stdin);
     Inventory iv;
     qInfo() << "**** Welcome to the iventory managament application ****";
@@ -70,5 +106,5 @@ int main(int argc, char *argv[])
     }
     iv.save();
     qInfo() << "Complete!!";
-    return a.exec();
+    return 0;
 }
