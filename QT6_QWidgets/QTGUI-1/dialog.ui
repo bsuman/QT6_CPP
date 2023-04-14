@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>571</width>
-    <height>416</height>
+    <height>427</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -77,11 +77,11 @@
      <x>10</x>
      <y>90</y>
      <width>541</width>
-     <height>311</height>
+     <height>331</height>
     </rect>
    </property>
    <property name="currentIndex">
-    <number>1</number>
+    <number>0</number>
    </property>
    <widget class="QWidget" name="makeAppTab">
     <attribute name="title">
@@ -96,71 +96,23 @@
        <x>0</x>
        <y>0</y>
        <width>521</width>
-       <height>281</height>
+       <height>291</height>
       </rect>
      </property>
      <widget class="QWidget" name="gridLayoutWidget">
       <property name="geometry">
        <rect>
         <x>0</x>
-        <y>0</y>
+        <y>10</y>
         <width>521</width>
-        <height>261</height>
+        <height>241</height>
        </rect>
       </property>
       <layout class="QGridLayout" name="makeAppLayout">
-       <item row="5" column="0">
-        <widget class="QPushButton" name="makeAppBtn">
-         <property name="text">
-          <string>Make Appointment</string>
-         </property>
-        </widget>
-       </item>
-       <item row="3" column="2">
-        <widget class="QLabel" name="serviceslabel">
-         <property name="text">
-          <string>Select Services</string>
-         </property>
-        </widget>
-       </item>
-       <item row="1" column="2">
-        <widget class="QDateTimeEdit" name="dateTimeEdit">
-         <property name="minimumDateTime">
-          <datetime>
-           <hour>0</hour>
-           <minute>0</minute>
-           <second>0</second>
-           <year>1752</year>
-           <month>9</month>
-           <day>14</day>
-          </datetime>
-         </property>
-        </widget>
-       </item>
-       <item row="3" column="0">
+       <item row="6" column="0">
         <widget class="QLabel" name="stylistlabel">
          <property name="text">
           <string>Select Stylist</string>
-         </property>
-        </widget>
-       </item>
-       <item row="1" column="0">
-        <widget class="QLabel" name="dateTimelabel">
-         <property name="text">
-          <string>Select Date &amp; Time</string>
-         </property>
-        </widget>
-       </item>
-       <item row="4" column="2">
-        <widget class="QListWidget" name="servicesList"/>
-       </item>
-       <item row="4" column="0">
-        <widget class="QListWidget" name="stylistList"/>
-       </item>
-       <item row="5" column="2">
-        <widget class="QPushButton" name="cancelBtn">
-         <property name="text">
-          <string>Cancel</string>
          </property>
         </widget>
        </item>
@@ -177,7 +129,79 @@
          </property>
         </spacer>
        </item>
+       <item row="4" column="0">
+        <widget class="QLabel" name="serviceslabel">
+         <property name="text">
+          <string>Select Services</string>
+         </property>
+        </widget>
+       </item>
+       <item row="4" column="1">
+        <widget class="QListWidget" name="servicesList"/>
+       </item>
+       <item row="6" column="1">
+        <widget class="QListWidget" name="stylistList"/>
+       </item>
+       <item row="3" column="0">
+        <widget class="QLabel" name="timeLabel">
+         <property name="text">
+          <string>Select Time </string>
+         </property>
+        </widget>
+       </item>
+       <item row="3" column="1">
+        <widget class="QTimeEdit" name="timeEdit"/>
+       </item>
+       <item row="2" column="1">
+        <widget class="QDateEdit" name="dateEdit"/>
+       </item>
+       <item row="2" column="0">
+        <widget class="QLabel" name="dateLabel">
+         <property name="text">
+          <string>Select Date </string>
+         </property>
+        </widget>
+       </item>
+       <item row="7" column="1">
+        <spacer name="verticalSpacer_2">
+         <property name="orientation">
+          <enum>Qt::Vertical</enum>
+         </property>
+         <property name="sizeHint" stdset="0">
+          <size>
+           <width>20</width>
+           <height>40</height>
+          </size>
+         </property>
+        </spacer>
+       </item>
       </layout>
+     </widget>
+     <widget class="QPushButton" name="makeAppBtn">
+      <property name="geometry">
+       <rect>
+        <x>260</x>
+        <y>260</y>
+        <width>141</width>
+        <height>24</height>
+       </rect>
+      </property>
+      <property name="text">
+       <string>Make Appointment</string>
+      </property>
+     </widget>
+     <widget class="QPushButton" name="cancelBtn">
+      <property name="geometry">
+       <rect>
+        <x>410</x>
+        <y>260</y>
+        <width>111</width>
+        <height>24</height>
+       </rect>
+      </property>
+      <property name="text">
+       <string>Cancel</string>
+      </property>
      </widget>
     </widget>
    </widget>

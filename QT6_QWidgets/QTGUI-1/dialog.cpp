@@ -166,7 +166,8 @@ void Dialog::getServices(QStringList& services){
 
 void Dialog::getStylists(QStringList& stylists,QString start_time,QString end_time){
     QSqlQuery query(db);
-    QString q_s("Select id, stylist_name from stylists");
+    QString q_s = "SELECT id,stylist_name FROM salon_info.stylists Where id not in"
+                  " (Select stylist_id from salon_info.appointments where start_date_time >= \'" + start_time + " \' and end_date_time <= \'" + end_time + "\')" ;
     bool ok = executeQuery(q_s,query);
     QString stylistInfo;
     if(ok){
@@ -254,9 +255,7 @@ bool Dialog::saveAppointmentinDB(QString &name, QString& phone_number,QString& s
 void Dialog::makeAppointment(){
     QString name = ui->nameEdit->text();
     QString phone_number = ui->mobileNumEdit->text();
-    QDateTime datetime = ui->dateTimeEdit->dateTime();
-    QString date = ui->dateTimeEdit->dateTime().date().toString();
-    QString time = ui->dateTimeEdit->dateTime().time().toString();
+
     QString stylist;
     QList<QListWidgetItem *> selected = ui->stylistList->selectedItems();
     if(selected.size()>0){
@@ -289,6 +288,11 @@ void Dialog::makeAppointment(){
         return;
     }
     QString appointmentIds = "";
+    QString date = ui->dateEdit->date().toString();
+    QString time = ui->timeEdit->time().toString();
+    QDateTime datetime;
+    datetime.setDate(ui->dateEdit->date());
+    datetime.setTime(ui->timeEdit->time());
     bool ok= saveAppointmentinDB(name, phone_number,stylist,datetime,services,appointmentIds);
 
     if(ok){
@@ -314,37 +318,48 @@ void Dialog::makeAppointment(){
 void Dialog::loadMakeAppointmentTab()
 {
     ui->makeAppWidget->setVisible(true);
-    QDateTime now= QDateTime::currentDateTime();
+    QDate today= QDate::currentDate();
+    QTime now= QTime::currentTime();
     qInfo() << "Now date-time format" <<  now.toString();
-    ui->dateTimeEdit->setDisplayFormat("yyyy-MM-dd HH:mm");
-    ui->dateTimeEdit->setDateTime(now);
-    ui->dateTimeEdit->setDateTimeRange(now,now.addMonths(2));
-
-
-    QString start_time = now.toString(Qt::ISODate);
-    QString end_time = now.addSecs(5400).toString(Qt::ISODate);
-    qInfo() << "Start Time: " << start_time;
-    qInfo() << "End Time: " << end_time;
+    ui->dateEdit->setDisplayFormat("yyyy-MM-dd");
+    ui->timeEdit->setDisplayFormat("HH:mm");
+    ui->dateEdit->setDate(today);
+    ui->timeEdit->setTime(now);
+    ui->dateEdit->setDateRange(today,today.addMonths(2));
+    ui->timeEdit->setTimeRange(QTime(10,0,0),QTime(19,0,0));
 
     QStringList services ;
     getServices(services);
-
-    QStringList stylists;
-    getStylists(stylists,start_time,end_time);
     ui->servicesList->clear();
     ui->servicesList->addItems(services);
     ui->servicesList->setSelectionMode(QAbstractItemView::ExtendedSelection);
     ui->servicesList->setSelectionBehavior(QAbstractItemView::SelectItems);
 
-    ui->stylistList->clear();
-    ui->stylistList->addItems(stylists);
-    ui->stylistList->setSelectionMode(QAbstractItemView::SingleSelection);
-    ui->stylistList->setSelectionBehavior(QAbstractItemView::SelectItems);
+    connect(ui->servicesList,&QListWidget::itemSelectionChanged,this,&Dialog::loadStylists);
     connect(ui->makeAppBtn,&QPushButton::clicked,this,&Dialog::makeAppointment);
     connect(ui->cancelBtn,&QPushButton::clicked,this,&Dialog::accept);
 }
 
+void Dialog::loadStylists(){
 
+    QDateTime start_datetime;
+    start_datetime.setDate(ui->dateEdit->date());
+    start_datetime.setTime(ui->timeEdit->time());
+    QString start_time = start_datetime.toString(Qt::ISODate);
+    int num_services = ui->servicesList->selectedItems().size();
+    QString end_time = start_datetime.addSecs(5400*num_services).toString(Qt::ISODate);
+    qInfo() << "Start Time: " << start_time;
+    qInfo() << "End Time: " << end_time;
+    QStringList stylists;
+    getStylists(stylists,start_time,end_time);
+
+
+    ui->stylistList->clear();
+    ui->stylistList->addItems(stylists);
+    ui->stylistList->setSelectionMode(QAbstractItemView::SingleSelection);
+    ui->stylistList->setSelectionBehavior(QAbstractItemView::SelectItems);
+
+}
 void Dialog::loadCancelAppointmentTab()
 {
     ui->cancelAppWidget->setVisible(true);

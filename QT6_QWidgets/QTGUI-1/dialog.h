@@ -46,6 +46,7 @@ private slots:
     void makeAppointment();
     void cancelAppointment();
     void loadBookingDetails();
+    void loadStylists();
 };
 
 #endif // DIALOG_H
