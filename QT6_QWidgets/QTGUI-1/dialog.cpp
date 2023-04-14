@@ -4,6 +4,7 @@
 #include <QMessageBox>
 #include <QList>
 #include <QSqlRecord>
+#include <QAbstractItemView>
 
 bool Dialog::executeQuery(QString &query_s,QSqlQuery &query){
     bool isQuerySuccessful = query.exec(query_s);
@@ -23,7 +24,7 @@ bool Dialog::updateStylists(){
     int num_stylists = 1;
     if(query.first())
         num_stylists = query.value(0).toInt();
-    qInfo() << "Number of services: " << num_stylists;
+    qInfo() << "Number of stylists: " << num_stylists;
     if(num_stylists > 1){
         return true;
     }
@@ -102,7 +103,8 @@ void Dialog::createTables(){
           cust_id int NOT NULL,\
           service_id int NOT NULL,\
           stylist_id int NOT NULL,\
-          date_time DATETIME NOT NULL ,\
+          start_date_time DATETIME NOT NULL ,\
+          end_date_time DATETIME NOT NULL ,\
           PRIMARY KEY (id),\
           FOREIGN KEY (cust_id) REFERENCES customers(id),\
           FOREIGN KEY (service_id) REFERENCES services(id),\
@@ -160,7 +162,7 @@ void Dialog::getServices(QStringList& services){
 }
 
 
-void Dialog::getStylists(QStringList& stylists){
+void Dialog::getStylists(QStringList& stylists,QString start_time,QString end_time){
     QSqlQuery query(db);
     QString q_s("Select stylist_name from stylists");
     executeQuery(q_s,query);
@@ -185,16 +187,9 @@ Dialog::Dialog(QWidget *parent)
 {
     connectToDatabase();
     ui->setupUi(this);
-    QDateTime now= QDateTime::currentDateTime();
-    ui->dateTimeEdit->setDateTime(now);
-    ui->dateTimeEdit->setDateTimeRange(now,now.addMonths(2));
-    QStringList services ;
-    getServices(services);
-    QStringList stylists;
-    getStylists(stylists);
-    ui->servicesList->addItems(services);
-    ui->stylistList->addItems(stylists);
-    connect(ui->makeAppBtn,&QPushButton::clicked,this,&Dialog::makeAppointment);
+    loadMakeAppointmentTab();
+    loadCancelAppointmentTab();
+
 }
 
 Dialog::~Dialog()
@@ -204,14 +199,111 @@ Dialog::~Dialog()
 
 
 void Dialog::makeAppointment(){
-    qInfo() <<"makeAppointment called!";
-
     QString name = ui->nameEdit->text();
     QString date = ui->dateTimeEdit->dateTime().date().toString();
     QString time = ui->dateTimeEdit->dateTime().time().toString();
-    //QString stylist = ui->listWidget->currentItem()->text();
-    QString msg = name + " booked an appointment on " + date + " at " + time;
+    QString stylist;
+    QList<QListWidgetItem *> selected = ui->stylistList->selectedItems();
+    if(selected.size()>0){
+        QListWidgetItem *item = selected[0];
+        stylist = item->text();
+        selected.clear();
+    }
+    else{
+        QMessageBox::warning(this,"No stylist selected","Please select a stylist!", QMessageBox::Ok);
+        return;
+    }
+    selected = ui->servicesList->selectedItems();
+    QString service = "";
+    if(selected.size()>0){
+        foreach(QListWidgetItem *item,selected){
+            if(service.size() > 0){
+                service = service + ", "  + item->text().chopped(8);
+            }
+            else{
+                service = item->text().chopped(8);
+            }
+        }
+        selected.clear();
+    }
+    else{
+        QMessageBox::warning(this,"No service selected","Please select a service!", QMessageBox::Ok);
+        return;
+    }
+
+    QString msg = name + " booked an appointment on " + date + " at " + time + " with stylist " + stylist + " for " + service + " service ";
     qInfo() << msg;
     QMessageBox::information(this,"Appointment Details",msg, QMessageBox::Ok);
     accept();
 }
+
+void Dialog::loadMakeAppointmentTab()
+{
+    ui->makeAppWidget->setVisible(true);
+    QDateTime now= QDateTime::currentDateTime();
+    qInfo() << "Now date-time format" <<  now.toString();
+    ui->dateTimeEdit->setDateTime(now);
+    ui->dateTimeEdit->setDateTimeRange(now,now.addMonths(2));
+
+    QString start_time = now.toString(Qt::ISODate);
+    QString end_time = now.addSecs(5400).toString(Qt::ISODate);
+    qInfo() << "Start Time: " << start_time;
+    qInfo() << "End Time: " << end_time;
+
+    QStringList services ;
+    getServices(services);
+
+    QStringList stylists;
+    getStylists(stylists,start_time,end_time);
+    ui->servicesList->clear();
+    ui->servicesList->addItems(services);
+    ui->servicesList->setSelectionMode(QAbstractItemView::ExtendedSelection);
+    ui->servicesList->setSelectionBehavior(QAbstractItemView::SelectItems);
+
+    ui->stylistList->clear();
+    ui->stylistList->addItems(stylists);
+    ui->stylistList->setSelectionMode(QAbstractItemView::SingleSelection);
+    ui->stylistList->setSelectionBehavior(QAbstractItemView::SelectItems);
+    connect(ui->makeAppBtn,&QPushButton::clicked,this,&Dialog::makeAppointment);
+}
+
+
+void Dialog::loadCancelAppointmentTab()
+{
+    ui->cancelAppWidget->setVisible(true);
+    connect(ui->bookingNumEdit,&QLineEdit::editingFinished,this,&Dialog::loadBookingDetails);
+    connect(ui->cancelAppButton,&QPushButton::clicked,this,&Dialog::cancelAppointment);
+}
+
+void Dialog::loadBookingDetails(){
+    QString booking_id = ui->bookingNumEdit->text();
+    if(booking_id.size()>0){
+        QSqlQuery query(db);
+        QString q_s("Select id,service_id,stylist_id,start_date_time from appointments where id=\'");
+        q_s = q_s + booking_id + "\'";
+        qInfo()<<"Appointment Query:" <<q_s;
+        executeQuery(q_s,query);
+        bool ok = executeQuery(q_s,query);
+        if(ok){
+            QStringList Appointments;
+            QString Details;
+            while(query.next()){
+                Details=query.value(0).toString();
+                Details = Details + ", "+query.value(1).toString();
+                Details = Details + ", "+query.value(2).toString();
+                Details = Details + ", "+query.value(3).toString();
+                Appointments.push_back(Details);
+            }
+        }
+    }
+    else{
+        QMessageBox::warning(this,"Invalid Booking ID","Please enter a valid booking ID!", QMessageBox::Ok);
+        return;
+    }
+
+}
+
+void Dialog::cancelAppointment(){
+
+}
+

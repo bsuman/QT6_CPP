@@ -6,132 +6,276 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>502</width>
-    <height>318</height>
+    <width>571</width>
+    <height>416</height>
    </rect>
   </property>
   <property name="windowTitle">
    <string>SalonAppointment</string>
   </property>
-  <widget class="QWidget" name="">
+  <widget class="QLabel" name="mobileNumlabel">
    <property name="geometry">
     <rect>
      <x>10</x>
-     <y>10</y>
-     <width>481</width>
-     <height>301</height>
+     <y>50</y>
+     <width>151</width>
+     <height>16</height>
     </rect>
    </property>
-   <layout class="QVBoxLayout" name="verticalLayout_3">
-    <item>
-     <layout class="QGridLayout" name="gridLayout">
-      <item row="0" column="0" colspan="2">
-       <layout class="QVBoxLayout" name="verticalLayout_2">
-        <item>
-         <widget class="QSplitter" name="splitter_3">
-          <property name="orientation">
-           <enum>Qt::Horizontal</enum>
-          </property>
-          <widget class="QLabel" name="label_2">
-           <property name="text">
-            <string>Enter Your Full Name</string>
-           </property>
-          </widget>
-          <widget class="QLineEdit" name="nameEdit"/>
-         </widget>
-        </item>
-        <item>
-         <widget class="QSplitter" name="splitter_4">
-          <property name="orientation">
-           <enum>Qt::Horizontal</enum>
-          </property>
-          <widget class="QLabel" name="label">
-           <property name="text">
-            <string>Select Date &amp; Time</string>
-           </property>
-          </widget>
-          <widget class="QDateTimeEdit" name="dateTimeEdit">
-           <property name="minimumDateTime">
-            <datetime>
-             <hour>0</hour>
-             <minute>0</minute>
-             <second>0</second>
-             <year>1752</year>
-             <month>9</month>
-             <day>14</day>
-            </datetime>
-           </property>
-          </widget>
-         </widget>
-        </item>
-       </layout>
-      </item>
-      <item row="1" column="0">
-       <widget class="QSplitter" name="splitter_2">
-        <property name="orientation">
-         <enum>Qt::Vertical</enum>
-        </property>
-        <widget class="QLabel" name="label_3">
+   <property name="text">
+    <string>Enter Your Mobile Number</string>
+   </property>
+  </widget>
+  <widget class="QLineEdit" name="mobileNumEdit">
+   <property name="geometry">
+    <rect>
+     <x>170</x>
+     <y>50</y>
+     <width>351</width>
+     <height>24</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string/>
+   </property>
+   <property name="placeholderText">
+    <string>+(countrycode) mobile_number [for example : +4912345678910]</string>
+   </property>
+  </widget>
+  <widget class="QLabel" name="fullname_label">
+   <property name="geometry">
+    <rect>
+     <x>13</x>
+     <y>13</y>
+     <width>111</width>
+     <height>16</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string>Enter Your Full Name</string>
+   </property>
+  </widget>
+  <widget class="QLineEdit" name="nameEdit">
+   <property name="geometry">
+    <rect>
+     <x>171</x>
+     <y>13</y>
+     <width>321</width>
+     <height>24</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string/>
+   </property>
+   <property name="placeholderText">
+    <string>firstname lastname [for example: Max Mustermann]</string>
+   </property>
+  </widget>
+  <widget class="QTabWidget" name="chooseActionWidget">
+   <property name="geometry">
+    <rect>
+     <x>10</x>
+     <y>90</y>
+     <width>541</width>
+     <height>311</height>
+    </rect>
+   </property>
+   <property name="currentIndex">
+    <number>1</number>
+   </property>
+   <widget class="QWidget" name="makeAppTab">
+    <attribute name="title">
+     <string>Make Appointment</string>
+    </attribute>
+    <widget class="QWidget" name="makeAppWidget" native="true">
+     <property name="enabled">
+      <bool>true</bool>
+     </property>
+     <property name="geometry">
+      <rect>
+       <x>0</x>
+       <y>0</y>
+       <width>521</width>
+       <height>281</height>
+      </rect>
+     </property>
+     <widget class="QWidget" name="gridLayoutWidget">
+      <property name="geometry">
+       <rect>
+        <x>0</x>
+        <y>0</y>
+        <width>521</width>
+        <height>261</height>
+       </rect>
+      </property>
+      <layout class="QGridLayout" name="makeAppLayout">
+       <item row="5" column="0">
+        <widget class="QPushButton" name="makeAppBtn">
+         <property name="text">
+          <string>Make Appointment</string>
+         </property>
+        </widget>
+       </item>
+       <item row="3" column="2">
+        <widget class="QLabel" name="serviceslabel">
+         <property name="text">
+          <string>Select Services</string>
+         </property>
+        </widget>
+       </item>
+       <item row="1" column="2">
+        <widget class="QDateTimeEdit" name="dateTimeEdit">
+         <property name="minimumDateTime">
+          <datetime>
+           <hour>0</hour>
+           <minute>0</minute>
+           <second>0</second>
+           <year>1752</year>
+           <month>9</month>
+           <day>14</day>
+          </datetime>
+         </property>
+        </widget>
+       </item>
+       <item row="3" column="0">
+        <widget class="QLabel" name="stylistlabel">
          <property name="text">
           <string>Select Stylist</string>
          </property>
         </widget>
+       </item>
+       <item row="1" column="0">
+        <widget class="QLabel" name="dateTimelabel">
+         <property name="text">
+          <string>Select Date &amp; Time</string>
+         </property>
+        </widget>
+       </item>
+       <item row="4" column="2">
+        <widget class="QListWidget" name="servicesList"/>
+       </item>
+       <item row="4" column="0">
         <widget class="QListWidget" name="stylistList"/>
-       </widget>
-      </item>
-      <item row="1" column="1">
-       <layout class="QVBoxLayout" name="verticalLayout">
-        <item>
-         <widget class="QLabel" name="label_4">
-          <property name="text">
-           <string>Select Services</string>
-          </property>
-         </widget>
-        </item>
-        <item>
-         <widget class="QListWidget" name="servicesList"/>
-        </item>
-       </layout>
-      </item>
-     </layout>
-    </item>
-    <item>
-     <widget class="QSplitter" name="splitter">
-      <property name="orientation">
-       <enum>Qt::Horizontal</enum>
-      </property>
-      <widget class="QPushButton" name="makeAppBtn">
-       <property name="text">
-        <string>Make Appointment</string>
-       </property>
-      </widget>
-      <widget class="QPushButton" name="cancelBtn">
-       <property name="text">
-        <string>Cancel</string>
-       </property>
-      </widget>
+       </item>
+       <item row="5" column="2">
+        <widget class="QPushButton" name="cancelBtn">
+         <property name="text">
+          <string>Cancel</string>
+         </property>
+        </widget>
+       </item>
+       <item row="0" column="0">
+        <spacer name="verticalSpacer">
+         <property name="orientation">
+          <enum>Qt::Vertical</enum>
+         </property>
+         <property name="sizeHint" stdset="0">
+          <size>
+           <width>20</width>
+           <height>40</height>
+          </size>
+         </property>
+        </spacer>
+       </item>
+      </layout>
      </widget>
-    </item>
-   </layout>
+    </widget>
+   </widget>
+   <widget class="QWidget" name="cancelTab">
+    <attribute name="title">
+     <string>Cancel Appointment</string>
+    </attribute>
+    <widget class="QWidget" name="cancelAppWidget" native="true">
+     <property name="geometry">
+      <rect>
+       <x>0</x>
+       <y>10</y>
+       <width>431</width>
+       <height>251</height>
+      </rect>
+     </property>
+     <widget class="QTableView" name="bookingDetailsTableView">
+      <property name="geometry">
+       <rect>
+        <x>10</x>
+        <y>70</y>
+        <width>381</width>
+        <height>111</height>
+       </rect>
+      </property>
+     </widget>
+     <widget class="QLabel" name="bookingNumLabel">
+      <property name="geometry">
+       <rect>
+        <x>10</x>
+        <y>0</y>
+        <width>131</width>
+        <height>21</height>
+       </rect>
+      </property>
+      <property name="text">
+       <string>Enter your booking ID</string>
+      </property>
+     </widget>
+     <widget class="QPushButton" name="pushButton">
+      <property name="geometry">
+       <rect>
+        <x>290</x>
+        <y>200</y>
+        <width>131</width>
+        <height>24</height>
+       </rect>
+      </property>
+      <property name="text">
+       <string>Discard Cancellation</string>
+      </property>
+     </widget>
+     <widget class="QPushButton" name="cancelAppButton">
+      <property name="geometry">
+       <rect>
+        <x>140</x>
+        <y>200</y>
+        <width>131</width>
+        <height>24</height>
+       </rect>
+      </property>
+      <property name="text">
+       <string>Confirm Cancellation</string>
+      </property>
+     </widget>
+     <widget class="QLineEdit" name="bookingNumEdit">
+      <property name="geometry">
+       <rect>
+        <x>190</x>
+        <y>0</y>
+        <width>161</width>
+        <height>24</height>
+       </rect>
+      </property>
+      <property name="text">
+       <string/>
+      </property>
+      <property name="placeholderText">
+       <string>1234</string>
+      </property>
+     </widget>
+     <widget class="QLabel" name="bookingDetailsLabel">
+      <property name="geometry">
+       <rect>
+        <x>10</x>
+        <y>50</y>
+        <width>130</width>
+        <height>16</height>
+       </rect>
+      </property>
+      <property name="text">
+       <string>Your Booking Details Are</string>
+      </property>
+     </widget>
+    </widget>
+   </widget>
   </widget>
  </widget>
  <resources/>
- <connections>
-  <connection>
-   <sender>cancelBtn</sender>
-   <signal>clicked()</signal>
-   <receiver>Dialog</receiver>
-   <slot>reject()</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>368</x>
-     <y>82</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>374</x>
-     <y>121</y>
-    </hint>
-   </hints>
-  </connection>
- </connections>
+ <connections/>
 </ui>

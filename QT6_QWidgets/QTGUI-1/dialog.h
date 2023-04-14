@@ -33,10 +33,14 @@ private:
     bool updateStylists();
     void createTables();
     void getServices(QStringList& services);
-    void getStylists(QStringList& stylists);
+    void getStylists(QStringList& stylists,QString start_time,QString end_time);
+    void loadMakeAppointmentTab();
+    void loadCancelAppointmentTab();
 
 private slots:
     void makeAppointment();
+    void cancelAppointment();
+    void loadBookingDetails();
 };
 
 #endif // DIALOG_H
