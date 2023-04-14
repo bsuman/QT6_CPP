@@ -147,12 +147,14 @@ void Dialog::connectToDatabase(){
 
 void Dialog::getServices(QStringList& services){
     QSqlQuery query(db);
-    QString q_s("Select service_name, price from services");
+    QString q_s("Select id,service_name, price from services");
     bool ok = executeQuery(q_s,query);
     QString serviceInfo;
     if(ok){
         while(query.next()){
-            serviceInfo= query.value(0).toString() + "  ( " + query.value(1).toString()+ "€ )" ;
+            service_info[query.value(1).toString()] = query.value(0).toString();
+            id_service_info[query.value(0).toString()] = query.value(1).toString();
+            serviceInfo= query.value(1).toString() + "  ( " + query.value(2).toString()+ "€ )" ;
             services.push_back(serviceInfo);
         }
     }
@@ -164,13 +166,14 @@ void Dialog::getServices(QStringList& services){
 
 void Dialog::getStylists(QStringList& stylists,QString start_time,QString end_time){
     QSqlQuery query(db);
-    QString q_s("Select stylist_name from stylists");
-    executeQuery(q_s,query);
+    QString q_s("Select id, stylist_name from stylists");
     bool ok = executeQuery(q_s,query);
     QString stylistInfo;
     if(ok){
         while(query.next()){
-            stylistInfo=query.value(0).toString();
+            stylist_info[query.value(1).toString()] = query.value(0).toString();
+            id_stylist_info[query.value(0).toString()] = query.value(1).toString() ;
+            stylistInfo=query.value(1).toString();
             stylists.push_back(stylistInfo);
         }
     }
@@ -198,8 +201,60 @@ Dialog::~Dialog()
 }
 
 
+bool Dialog::saveAppointmentinDB(QString &name, QString& phone_number,QString& stylist,QDateTime& datetime, QStringList &services,QString& appointmentId)
+{
+    QSqlQuery query(db);
+    QString q_s = "Select id from customers where cust_name =\'" + name + "\' and phone_number = \'"+ phone_number + "\')";
+    bool ok = executeQuery(q_s,query);
+    if(!ok){
+        qWarning()<< "Customer could not be searched in the database";
+    }
+    QString cust_id;
+    if(query.first()){
+        cust_id = query.value(0).toString();
+    }
+    else{
+        q_s = "INSERT INTO customers (cust_name,phone_number) VALUES (\'" + name + "\',\'"+ phone_number + "\')";
+        ok = executeQuery(q_s,query);
+        if(!ok){
+            qWarning()<<"Customer could not be saved to the database!";
+            return ok;
+        }
+        cust_id = query.lastInsertId().toString();
+    }
+
+
+    QString stylist_id = stylist_info[stylist];
+    QDateTime starttime = datetime;
+    foreach(QString service, services){
+        QString start_time = starttime.toString(Qt::ISODate);
+        QString end_time = starttime.addSecs(5400).toString(Qt::ISODate);
+        QString service_id = service_info[service.trimmed()];
+        q_s = "INSERT INTO appointments(cust_id,service_id,stylist_id,start_date_time,end_date_time) VALUES (\'"
+              + cust_id + "\',\'"+ service_id + "\',\'"+  stylist_id + "\',\'"+start_time + "\',\'"+ end_time  + "\')";
+
+        qInfo() << "insert appointment query" << q_s;
+        ok = executeQuery(q_s,query);
+        if(!ok){
+            qWarning()<<"Appointments could not be saved to the database!";
+            return ok;
+        }
+        starttime = starttime.addSecs(5400);
+        if(appointmentId == ""){
+            appointmentId = query.lastInsertId().toString();
+        }else{
+            appointmentId = appointmentId + "," + query.lastInsertId().toString();
+        }
+    }
+    qInfo() << "Appointment saved for each selected service!";
+    return true;
+}
+
+
 void Dialog::makeAppointment(){
     QString name = ui->nameEdit->text();
+    QString phone_number = ui->mobileNumEdit->text();
+    QDateTime datetime = ui->dateTimeEdit->dateTime();
     QString date = ui->dateTimeEdit->dateTime().date().toString();
     QString time = ui->dateTimeEdit->dateTime().time().toString();
     QString stylist;
@@ -214,14 +269,17 @@ void Dialog::makeAppointment(){
         return;
     }
     selected = ui->servicesList->selectedItems();
-    QString service = "";
+    QString service = "",tmp = "" ;
+    QStringList services;
     if(selected.size()>0){
         foreach(QListWidgetItem *item,selected){
+            tmp = item->text().chopped(8);
+            services.push_back(tmp);
             if(service.size() > 0){
-                service = service + ", "  + item->text().chopped(8);
+                service = service + ", "  + tmp;
             }
             else{
-                service = item->text().chopped(8);
+                service = tmp;
             }
         }
         selected.clear();
@@ -230,10 +288,26 @@ void Dialog::makeAppointment(){
         QMessageBox::warning(this,"No service selected","Please select a service!", QMessageBox::Ok);
         return;
     }
+    QString appointmentIds = "";
+    bool ok= saveAppointmentinDB(name, phone_number,stylist,datetime,services,appointmentIds);
 
-    QString msg = name + " booked an appointment on " + date + " at " + time + " with stylist " + stylist + " for " + service + " service ";
-    qInfo() << msg;
-    QMessageBox::information(this,"Appointment Details",msg, QMessageBox::Ok);
+    if(ok){
+        QString msg = name + " booked an appointment on " + date + " at " + time + " with stylist " + stylist + " for " + service + " service ";
+        qInfo() << msg;
+        QMessageBox::information(this,"Appointment Confirmation",msg, QMessageBox::Ok);
+
+        QStringList app_i = appointmentIds.split(",");
+        msg = "Please note the booking number for each service: \n";
+        int index = 0;
+        foreach(QString app,app_i){
+            msg = msg + services[index] + " -> " + app + "\n";
+            index ++;
+        }
+        QMessageBox::information(this,"Appointment Details",msg, QMessageBox::Ok);
+    }
+    else{
+        QMessageBox::warning(this,"Connection Issues","Sorry but appointment cannot be made at the moment. \n Please try again later! ", QMessageBox::Ok);
+    }
     accept();
 }
 
@@ -242,8 +316,10 @@ void Dialog::loadMakeAppointmentTab()
     ui->makeAppWidget->setVisible(true);
     QDateTime now= QDateTime::currentDateTime();
     qInfo() << "Now date-time format" <<  now.toString();
+    ui->dateTimeEdit->setDisplayFormat("yyyy-MM-dd HH:mm");
     ui->dateTimeEdit->setDateTime(now);
     ui->dateTimeEdit->setDateTimeRange(now,now.addMonths(2));
+
 
     QString start_time = now.toString(Qt::ISODate);
     QString end_time = now.addSecs(5400).toString(Qt::ISODate);
@@ -265,34 +341,73 @@ void Dialog::loadMakeAppointmentTab()
     ui->stylistList->setSelectionMode(QAbstractItemView::SingleSelection);
     ui->stylistList->setSelectionBehavior(QAbstractItemView::SelectItems);
     connect(ui->makeAppBtn,&QPushButton::clicked,this,&Dialog::makeAppointment);
+    connect(ui->cancelBtn,&QPushButton::clicked,this,&Dialog::accept);
 }
 
 
 void Dialog::loadCancelAppointmentTab()
 {
     ui->cancelAppWidget->setVisible(true);
-    connect(ui->bookingNumEdit,&QLineEdit::editingFinished,this,&Dialog::loadBookingDetails);
+    ui->bookingDetailstableWidget->setEnabled(false);
+    connect(ui->searchButton,&QPushButton::clicked,this,&Dialog::loadBookingDetails);
     connect(ui->cancelAppButton,&QPushButton::clicked,this,&Dialog::cancelAppointment);
+    connect(ui->discardCancelButton,&QPushButton::clicked,this,&Dialog::accept);
 }
 
 void Dialog::loadBookingDetails(){
     QString booking_id = ui->bookingNumEdit->text();
-    if(booking_id.size()>0){
+    QString customer_name = ui->nameEdit->text();
+    QString phone_number = ui->mobileNumEdit->text();
+    if(booking_id.size()>0 && customer_name.size()>0 && phone_number.size()>0){
         QSqlQuery query(db);
-        QString q_s("Select id,service_id,stylist_id,start_date_time from appointments where id=\'");
-        q_s = q_s + booking_id + "\'";
+        QSqlQuery query_cust(db);
+        QString q_s = "Select id,service_id,stylist_id,start_date_time,cust_id from appointments where id=\'"+ booking_id + "\'";
         qInfo()<<"Appointment Query:" <<q_s;
-        executeQuery(q_s,query);
         bool ok = executeQuery(q_s,query);
+        ui->bookingDetailstableWidget->setEnabled(true);
+
+        ui->bookingDetailstableWidget->setSelectionMode(QAbstractItemView::SingleSelection);
+        ui->bookingDetailstableWidget->setSelectionBehavior(QAbstractItemView::SelectRows);
+        int row = ui->bookingDetailstableWidget->rowCount();
+
         if(ok){
-            QStringList Appointments;
-            QString Details;
+            QString cust_id = "";
             while(query.next()){
-                Details=query.value(0).toString();
-                Details = Details + ", "+query.value(1).toString();
-                Details = Details + ", "+query.value(2).toString();
-                Details = Details + ", "+query.value(3).toString();
-                Appointments.push_back(Details);
+                cust_id = query.value(4).toString();
+                q_s = "Select cust_name,phone_number from customers where id = \'" + cust_id + "\'";
+                ok = executeQuery(q_s,query_cust);
+                if(ok){
+                    while(query_cust.next()){
+                        if(query_cust.value(0).toString() ==customer_name && query_cust.value(1).toString() ==phone_number ){
+                            ui->bookingDetailstableWidget->insertRow(row);
+                            for(int col = 0 ; col < 4;col++){
+                                QTableWidgetItem  *tmp ;
+                                if(col == 1){
+                                    tmp = new QTableWidgetItem(id_service_info[query.value(col).toString()]);
+                                }
+                                else if(col == 2){
+                                    tmp = new QTableWidgetItem(id_stylist_info[query.value(col).toString()]);
+                                }
+                                else if(col == 3){
+                                    tmp = new QTableWidgetItem(QDateTime::fromString(query.value(col).toString(),Qt::ISODate).toString());
+                                }
+                                else{
+                                    tmp = new QTableWidgetItem(query.value(col).toString());
+                                }
+                                ui->bookingDetailstableWidget->setItem(row,col,tmp);
+                            }
+                            row++;
+                        }
+                        else{
+                            QMessageBox::warning(this,"Customer Information Mismatch","The given booking ID is not for current customer!!", QMessageBox::Ok);
+                            return;
+                        }
+                    }
+                }
+                else{
+                    qWarning()<< "Customer does not exist!";
+                }
+
             }
         }
     }
@@ -304,6 +419,26 @@ void Dialog::loadBookingDetails(){
 }
 
 void Dialog::cancelAppointment(){
+    QList<QTableWidgetItem*> items =  ui->bookingDetailstableWidget->selectedItems();
+    if(items.size()>0){
+        QTableWidgetItem* pitem(items[0]);
+        QString appointmentID = pitem->text();
 
+        QSqlQuery query(db);
+        QString q_s = "DELETE FROM appointments where id =\'" + appointmentID +"\'";
+        bool ok = executeQuery(q_s,query);
+        if(!ok){
+            QMessageBox::warning(this,"Connection Error"," Sorry, could not delete the selected appointment, please try again later!", QMessageBox::Ok);
+            return;
+        }
+        else{
+            QMessageBox::information(this,"Appointment cancellation confirmation","Appointment cancelled!", QMessageBox::Ok);
+            accept();
+        }
+    }
+    else{
+        QMessageBox::warning(this,"No appointment selected","Please select atleast one appointment!", QMessageBox::Ok);
+        return;
+    }
 }
 
